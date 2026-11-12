@@ -1,0 +1,12 @@
+bundle:
+  name: validation_agent
+
+include:
+  - resources/*.yml
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      profile: Daman

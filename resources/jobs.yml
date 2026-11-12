@@ -1,0 +1,15 @@
+resources:
+  jobs:
+    validation_agent_job:
+      name: validation_agent
+      environments:
+        - environment_key: default
+          spec:
+            client: "1"
+            dependencies:
+              - "pydantic>=2"
+      tasks:
+        - task_key: apply_requests
+          environment_key: default
+          notebook_task:
+            notebook_path: ../notebooks/02_orchestrator.py
