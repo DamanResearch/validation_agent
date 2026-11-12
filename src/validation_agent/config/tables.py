@@ -50,4 +50,15 @@ CREATE TABLE IF NOT EXISTS {settings.fq}.asset_registry (
 ) USING DELTA
 """
 
-ALL_DDL = [CHANGE_REQUEST_DDL, ASSET_REGISTRY_DDL]
+AUDIT_EVENT_DDL = f"""
+CREATE TABLE IF NOT EXISTS {settings.fq}.audit_event (
+  event_id STRING,
+  change_request_id STRING,
+  event_type STRING,
+  classification STRING,
+  decision STRING,
+  occurred_at TIMESTAMP
+) USING DELTA
+"""
+
+ALL_DDL = [CHANGE_REQUEST_DDL, ASSET_REGISTRY_DDL, AUDIT_EVENT_DDL]

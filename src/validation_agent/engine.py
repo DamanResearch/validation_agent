@@ -8,6 +8,7 @@ from validation_agent.models import (
     ChangeRequest,
     Classification,
     Decision,
+    Outcome,
     RegistryRow,
     ValidationResult,
 )
@@ -99,3 +100,36 @@ def plan_scd2(
         created_at=applied_at,
     )
     return closed, new_row
+
+
+def plan_batch(
+    requests: list[ChangeRequest],
+    current: dict[str, RegistryRow],
+    applied_ids: set[str],
+    applied_at: datetime,
+) -> tuple[dict[str, RegistryRow], list[Outcome]]:
+    """Return final row state keyed by registry_version_id, plus per-request outcomes."""
+    current = dict(current)
+    changes: dict[str, RegistryRow] = {}
+    outcomes: list[Outcome] = []
+    for request in requests:
+        if request.change_request_id in applied_ids:
+            continue
+        existing = current.get(request.asset_id)
+        result = validate(request, existing)
+        decision = decide(result)
+        outcomes.append(
+            Outcome(
+                change_request_id=request.change_request_id,
+                classification=result.classification,
+                decision=decision,
+            )
+        )
+        if decision is not Decision.APPROVED:
+            continue
+        closed, new_row = plan_scd2(request, result, existing, applied_at)
+        if closed is not None:
+            changes[closed.registry_version_id] = closed
+        changes[new_row.registry_version_id] = new_row
+        current[request.asset_id] = new_row
+    return changes, outcomes

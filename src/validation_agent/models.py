@@ -93,3 +93,9 @@ class ValidationResult(BaseModel):
     classification: Classification
     findings: list[str]
     proposed_hash: str | None
+
+
+class Outcome(BaseModel):
+    change_request_id: str
+    classification: Classification
+    decision: Decision
