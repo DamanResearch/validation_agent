@@ -1,0 +1,23 @@
+resources:
+  jobs:
+    change_request_load_and_validate:
+      name: change_request_load_and_validate
+      environments:
+        - environment_key: default
+          spec:
+            client: "1"
+            dependencies:
+              - "pydantic>=2"
+      tasks:
+        - task_key: load_change_requests
+          environment_key: default
+          notebook_task:
+            notebook_path: ../notebooks/01_load_change_requests.py
+        - task_key: run_validation_agent
+          environment_key: default
+          depends_on:
+            - task_key: load_change_requests
+          notebook_task:
+            notebook_path: ../notebooks/02_run_validation_agent.py
+            base_parameters:
+              model: databricks-claude-haiku-5-5
