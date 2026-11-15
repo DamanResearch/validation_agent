@@ -71,8 +71,17 @@ async def run_validation_agent(spark: SparkSession, client: Any) -> dict[str, An
     agent = build_agent(spark, client, outcomes)
     result = await agent.run(RUN_PROMPT)
     counts = Counter(o["decision"] for o in outcomes)
+    agent_text = (result.text or "").strip() or fallback_report(dict(counts))
     return {
-        "agent_text": result.text or "",
+        "agent_text": agent_text,
         "decision_counts": dict(counts),
         "outcomes": outcomes,
     }
+
+
+def fallback_report(decision_counts: dict[str, int]) -> str:
+    """Deterministic summary used when the model returns no text."""
+    if not decision_counts:
+        return "No pending change requests were processed."
+    parts = ", ".join(f"{n} {decision.lower()}" for decision, n in sorted(decision_counts.items()))
+    return f"Processed pending change requests: {parts}. (Summary generated from writer outcomes.)"
